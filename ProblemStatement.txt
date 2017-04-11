@@ -1,0 +1,46 @@
+
+Background:
+	We use filesystem everyday. Browsing files, creating directories, copying files, creating backups, archiving and journaling,
+	all of these are possible because of the way filesystems are designed. Before the advent of computers the term file system 
+	was used to describe a method of storing and retrieving paper documents.
+
+	Filesystems have 2 important items:
+	1. Files: Storage location where actual user data is written to.
+	2. Directory: Storage location which holds information of sub folders and files.
+
+	Filesystems provide APIs that help us in:
+	1. Creating and deleting files.
+	2. Creating and deleting directories.
+	3. Showing the content of a directory.
+
+	Filesystems also provide a Directory Cache aka "Dentry Cache". This cache provides a way of finding the most frequently used files faster than
+	regular file system traversal. Example:
+	" ls /net/build_machine/my_branch/my_working_directory " takes about 1 sec in the first try because we don't have it in cache. 
+	But subsequent ls on this or any children files/folders are much faster because of dentry cache. 
+	
+	Essentially dentry caches are a mapping between pathnames and where the directory is stored. 
+	That way, given a path, it is faster to check the path in the cache as opposed the filesystem directly.
+
+
+
+Problem:
+	1. Design and implement a filesystem to Insert and Delete files and directories using a filesystem heirarchy as the base model, 
+	   ie. given a parent directory, you should be able to figure out the child files and directories.
+	2. The files are not required to save any actual data.
+	3. Design and implemet a directory cache to make Insert, Delete and lookup in the filesystem faster.
+	4. Implement ls such that:
+		Given a directory: It prints all children files as '<FileName> - f' and directories as '<directory> - d'
+		Given a filename: It print '<filename> exists.'
+	5. Implement the ShowCache API for troubleshooting and debugging depending upon your Cache design.
+	6. Make sure to handle errors.
+	7. Feel free to add member variables/functions to ease the design implemetation.
+
+
+Checksum/Hashes
+	A hashing API has been provided called hash_adler32, which takes a data buffer and size as input and
+	produces a 32 bit integer as output. Hashes provide a high mathematical probability that if the hashes of two input match,
+	the original data would be the same.
+
+Design and implementation expectations:
+- A neat, well organized, componentized and robust design of your data structures
+- Robust error handling, handling corner cases and other good programming practices will be duly considered during evaluation.
