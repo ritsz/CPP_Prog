@@ -22,6 +22,9 @@ class File {
     bool IsDirectory();
 };
 
+/*
+ * This is your file system.
+ */
 class FileSystem {
     enum {
             FILEFOUND = 0,
