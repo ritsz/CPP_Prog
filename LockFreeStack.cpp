@@ -3,6 +3,7 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <vector>
 
 using namespace std;
 
@@ -23,13 +24,15 @@ private:
     }
   };
 /* Atomic pointer that represents the top of a stack */
-  //atomic<node *> head;
-  node *head;
+  atomic<node *> head;
+  //node *head;
 public:
   void push(T const& _data) {
     node * new_node = new node(_data);
     new_node->next = head.load();
-    while(!head.compare_exchange_weak(new_node->next, new_node));
+    while(!head.compare_exchange_weak(new_node->next, new_node,
+                                      std::memory_order_release,
+                                      std::memory_order_relaxed));
   }
 
   ~lock_free_stack()
@@ -46,16 +49,17 @@ public:
 
   T& head_data() {
     //cout << "LOCK " << head.is_lock_free() << endl;
-    return head->data;
+    return head.load()->data;
   }
 };
 
 #define ENTRIES 10000000
+#define THREADS 16
 
 void add(lock_free_stack<int> *stack)
 {
    for (size_t i = 0; i < ENTRIES; i++) {
-     stack->push_lock(i);
+     stack->push(i);
      atomic_fetch_add(&cnt, 1);
    }
 }
@@ -64,25 +68,17 @@ int main(int argc, char const *argv[]) {
   /* code */
   std::chrono::time_point<std::chrono::system_clock> start, end;
   cout<<"Start"<<endl;
+  vector<thread> workers(THREADS);
   start = std::chrono::system_clock::now();
   lock_free_stack<int> obj;
 
-  std::thread first (add, &obj);     // spawn new thread that calls foo()
-  std::thread second (add, &obj);
-  std::thread third (add, &obj);
-  std::thread forth (add, &obj);
-  std::thread fifth (add, &obj);
-  std::thread sixth (add, &obj);
-  std::thread seventh (add, &obj);
-  std::thread eighth (add, &obj);
-  first.join();
-  second.join();
-  third.join();
-  forth.join();
-  fifth.join();
-  sixth.join();
-  seventh.join();
-  eighth.join();
+  for (size_t i = 0; i < THREADS; i++) {
+    workers.at(i) = std::thread(add, &obj);
+  }
+
+  for (size_t i = 0; i < THREADS; i++) {
+    workers.at(i).join();
+  }
   cout << obj.head_data() << endl;
 
   end = std::chrono::system_clock::now();
