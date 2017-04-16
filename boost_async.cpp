@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#define SCAN_CONTENT "/home/ritsz/testScan"
+#define SCAN_CONTENT "/home/ritsz/testScan/"
 
 using namespace std;
 using namespace boost;
