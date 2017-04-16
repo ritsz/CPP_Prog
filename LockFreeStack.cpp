@@ -47,6 +47,14 @@ public:
     m_mutex.unlock();
   }
 
+  T pop()
+  {
+    node *old_head = head.load();
+    while(old_head &&
+          !head.compare_exchange_weak(old_head, old_head->next));
+    return old_head ? old_head->data : T();
+  }
+
   T& head_data() {
     //cout << "LOCK " << head.is_lock_free() << endl;
     return head.load()->data;
@@ -61,6 +69,10 @@ void add(lock_free_stack<int> *stack)
    for (size_t i = 0; i < ENTRIES; i++) {
      stack->push(i);
      atomic_fetch_add(&cnt, 1);
+   }
+
+   for (size_t i = 0; i < cnt; i++) {
+     stack->pop();
    }
 }
 
@@ -79,7 +91,6 @@ int main(int argc, char const *argv[]) {
   for (size_t i = 0; i < THREADS; i++) {
     workers.at(i).join();
   }
-  cout << obj.head_data() << endl;
 
   end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end-start;
